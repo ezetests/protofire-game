@@ -1,0 +1,59 @@
+name: Build and Push workflow
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths-ignore:
+      - ".github/**"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+          cache: true
+          cache-dependency-path: |
+            **/go.sum
+            **/go.mod
+
+      - name: Set up Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Cache Foundry artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/foundry
+            ~/.foundry
+          key: ${{ runner.os }}-foundry-${{ hashFiles('**/foundry.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-foundry-
+
+      - name: Install dependencies
+        run: |
+          go mod tidy
+          go mod download
+
+      - name: Build client
+        run: make build
+
+      - name: Test client
+        run: make test/client
+
+      - name: Run Forge build
+        run: forge build --sizes
+
+      - name: Test contract
+        env:
+          NODE_RPC: ${{ secrets.NODE_RPC }}
+        run: make test/contract

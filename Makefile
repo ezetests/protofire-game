@@ -1,6 +1,5 @@
 DATA_DIR ?= "$(HOME)/.local/state/protofire-game"
-HARMONY_TESTNET_RPC_URL ?= "https://api.s0.b.hmny.io"
-HARMONY_TESTNET_CHAIN_ID ?= 1666700000
+
 ifneq (,$(wildcard .env))
     include .env
     export
@@ -31,5 +30,5 @@ deploy/contract/dev:
 	@ cd contract && forge script script/protofire-game.s.sol:ProtofireGameScript --fork-url "http://localhost:8545" --broadcast --legacy -vvvv
 
 deploy/contract:
-  @ cd contract && forge script script/protofire-game.s.sol:ProtofireGameScript --rpc-url $(HARMONY_TESTNET_RPC_URL) --broadcast --legacy --chain-id $(HARMONY_TESTNET_CHAIN_ID) -vvvv
+	@ cd contract && forge script script/protofire-game.s.sol:ProtofireGameScript --rpc-url $(NODE_RPC) --broadcast --legacy -vvvv
 

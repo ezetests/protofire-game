@@ -56,7 +56,11 @@ func (c *GameCLI) playPlayerVsPlayer() {
 	fmt.Print("Enter Player 2 name: ")
 	player2 := c.readPlayerName()
 
-	c.useCase.StartNewGame(domain.PlayerVsPlayer, player1, player2)
+	if err := c.useCase.StartNewGame(domain.PlayerVsPlayer, player1, player2); err != nil {
+		fmt.Printf("Error starting game: %v\n", err)
+		return
+	}
+
 	var currentRound int
 	var game *domain.Game
 	var err error
@@ -91,7 +95,11 @@ func (c *GameCLI) playPlayerVsBot() {
 	fmt.Print("Enter your name: ")
 	player1 := c.readPlayerName()
 
-	c.useCase.StartNewGame(domain.PlayerVsBot, player1, "Bot")
+	if err := c.useCase.StartNewGame(domain.PlayerVsBot, player1, "Bot"); err != nil {
+		fmt.Printf("Error starting game: %v\n", err)
+		return
+	}
+
 	var currentRound int
 	var game *domain.Game
 	var err error

@@ -33,3 +33,6 @@ out/
 # Ignores development broadcast logs
 broadcast/
 
+protofire-game
+
+**/data/

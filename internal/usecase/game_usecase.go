@@ -24,7 +24,14 @@ func NewGameUseCase(repo domain.GameRepository, randGen domain.RandomGenerator) 
 	}
 }
 
-func (g *GameUseCase) StartNewGame(mode domain.GameType, player1, player2 string) {
+func (g *GameUseCase) StartNewGame(mode domain.GameType, player1, player2 string) error {
+	if err := domain.ValidatePlayerName(player1); err != nil {
+		return fmt.Errorf("invalid player1 name: %w", err)
+	}
+	if err := domain.ValidatePlayerName(player2); err != nil {
+		return fmt.Errorf("invalid player2 name: %w", err)
+	}
+
 	g.currentGame = &domain.Game{
 		ID:       uuid.New().String(),
 		Player1:  player1,
@@ -33,6 +40,7 @@ func (g *GameUseCase) StartNewGame(mode domain.GameType, player1, player2 string
 	}
 	g.currentMode = mode
 	g.currentRounds = make([]domain.RoundResult, 0)
+	return nil
 }
 
 func (g *GameUseCase) PlayRound(move1, move2 domain.Move) (*domain.Game, error) {

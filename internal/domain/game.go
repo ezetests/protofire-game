@@ -1,5 +1,9 @@
 package domain
 
+import (
+	"fmt"
+)
+
 type Move int
 
 const (
@@ -74,4 +78,14 @@ func DetermineWinner(move1, move2 Move) int {
 	}
 
 	return 2 // Player 2 wins
+}
+
+func ValidatePlayerName(name string) error {
+	if len(name) == 0 {
+		return fmt.Errorf("name cannot be empty")
+	}
+	if len(name) > 15 {
+		return fmt.Errorf("name cannot be longer than 15 characters")
+	}
+	return nil
 }

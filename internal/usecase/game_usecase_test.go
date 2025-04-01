@@ -16,7 +16,8 @@ func TestStartNewGame(t *testing.T) {
 	randGen := randomness.NewMockRandomGenerator([]domain.Move{})
 	gameUseCase := NewGameUseCase(repo, randGen)
 
-	gameUseCase.StartNewGame(domain.PlayerVsPlayer, "Player1", "Player2")
+	err := gameUseCase.StartNewGame(domain.PlayerVsPlayer, "Player1", "Player2")
+	assert.NoError(t, err)
 
 	assert.NotNil(t, gameUseCase.currentGame)
 	assert.Equal(t, "Player1", gameUseCase.currentGame.Player1)
@@ -25,12 +26,69 @@ func TestStartNewGame(t *testing.T) {
 	assert.Empty(t, gameUseCase.currentRounds)
 }
 
+func TestStartNewGameWithInvalidNames(t *testing.T) {
+	repo := repository.NewMockRepository()
+	randGen := randomness.NewMockRandomGenerator([]domain.Move{})
+	gameUseCase := NewGameUseCase(repo, randGen)
+
+	tests := []struct {
+		name    string
+		player1 string
+		player2 string
+		wantErr bool
+		errMsg  string
+	}{
+		{
+			name:    "empty player1 name",
+			player1: "",
+			player2: "Player2",
+			wantErr: true,
+			errMsg:  "invalid player1 name: name cannot be empty",
+		},
+		{
+			name:    "empty player2 name",
+			player1: "Player1",
+			player2: "",
+			wantErr: true,
+			errMsg:  "invalid player2 name: name cannot be empty",
+		},
+		{
+			name:    "player1 name too long",
+			player1: "ThisNameIsTooLongForTheGame",
+			player2: "Player2",
+			wantErr: true,
+			errMsg:  "invalid player1 name: name cannot be longer than 15 characters",
+		},
+		{
+			name:    "player2 name too long",
+			player1: "Player1",
+			player2: "ThisNameIsTooLongForTheGame",
+			wantErr: true,
+			errMsg:  "invalid player2 name: name cannot be longer than 15 characters",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := gameUseCase.StartNewGame(domain.PlayerVsPlayer, tt.player1, tt.player2)
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Equal(t, tt.errMsg, err.Error())
+				assert.Nil(t, gameUseCase.currentGame)
+				return
+			}
+			assert.NoError(t, err)
+		})
+	}
+}
+
 func TestPlayRoundPlayerVsPlayer(t *testing.T) {
 	repo := repository.NewMockRepository()
 	randGen := randomness.NewMockRandomGenerator([]domain.Move{})
 	gameUseCase := NewGameUseCase(repo, randGen)
 
-	gameUseCase.StartNewGame(domain.PlayerVsPlayer, "Player1", "Player2")
+	err := gameUseCase.StartNewGame(domain.PlayerVsPlayer, "Player1", "Player2")
+	assert.NoError(t, err)
 
 	// Test first round - Player1 wins
 	result, err := gameUseCase.PlayRound(domain.Rock, domain.Scissors)
@@ -52,7 +110,8 @@ func TestPlayRoundPlayerVsBot(t *testing.T) {
 	randGen := randomness.NewMockRandomGenerator([]domain.Move{domain.Rock, domain.Rock, domain.Rock})
 	gameUseCase := NewGameUseCase(repo, randGen)
 
-	gameUseCase.StartNewGame(domain.PlayerVsBot, "Player1", "Bot")
+	err := gameUseCase.StartNewGame(domain.PlayerVsBot, "Player1", "Bot")
+	assert.NoError(t, err)
 
 	// Test first round - Player1 wins (Paper beats Rock)
 	result, err := gameUseCase.PlayRound(domain.Paper, 0)
